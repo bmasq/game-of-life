@@ -10,6 +10,7 @@ CHARD = ' ' # dead
 PROB = 0.5 # probability to birth a cell
 WIDTH = 70
 HEIGHT = 15
+DELAY = 0.5
 
 def init(width, length):
     cells = list()
@@ -21,17 +22,6 @@ def init(width, length):
             else:
                 cells[i].append(CHARD)
     return cells
-
-# def boardtoStr(cells):
-#     centre = ''
-#     for row in cells:
-#         centre += '|' + '|'.join(row) + '|\n'
-#     row_length = len(row) + 2 + len(row) - 1
-#     border = ['+' + '-' * row_length + '+']
-#     border += ['|' + ' ' * row_length + '|' for row in cells]
-#     border += ['+' + '-' * row_length + '+']
-#     output = '\n'.join(border)
-#     return output
 
 def cellsToStr(cells):
     out = ""
@@ -90,12 +80,16 @@ def pressKey(message):
 
 def display(cells, time0, gen):
     output = ""
-    #timer
     title()
+    now = clock(int(time.time()) - time0)
+    now = tuple("{:02d}".format(n) for n in now)
+    now = map(str, now)
+    output += ':'.join(now) + "   "
     output += "Generation: {}   ".format(gen)
     cellCount = countCells(cells)
-    output += "Cells alive: {}   ".format(cellCount[0])
-    output += "Cells dead: {}".format(cellCount[1])
+    output += "Cells: {}  ".format(cellCount[0])
+    output += "Cells alive: {}   ".format(cellCount[1])
+    output += "Cells dead: {}".format(cellCount[2])
     output += '\n' + '_'*len(cells[0]) + '\n'*2
     print(output + cellsToStr(cells))
 
@@ -105,7 +99,15 @@ def countCells(cells):
     for row in cells:
         alive += row.count(CHARA)
         dead += row.count(CHARD)
-    return alive, dead
+    return alive+dead, alive, dead
+
+# converts a time in seconds to hours, minutes and seconds
+def clock(s):
+    h = s // 3600
+    s -= h*3600
+    m = s // 60
+    s -= m*60
+    return h, m, s
 
 # beautiful title if figlet is installed
 def title():
@@ -126,7 +128,7 @@ print()
 print(cellsToStr(firstBatch))
 print()
 pressKey("Press ENTER to start...")
-startTime = time.time()
+startTime = int(time.time())
 
 batch = firstBatch[:]
 genCount = 0
@@ -136,4 +138,4 @@ while True:
     genCount += 1
     display(batch, startTime, genCount)
     # here goes if stable state: END / or inside updateState
-    time.sleep(0.75)
+    time.sleep(DELAY)
