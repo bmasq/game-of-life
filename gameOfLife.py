@@ -7,7 +7,7 @@ clear = lambda : os.system("clear")
 
 CHARA = '\u2588'  # alive
 CHARD = ' ' # dead
-PROB = 0.3 # probability to birth a cell
+PROB = 0.5 # probability to birth a cell
 WIDTH = 78
 HEIGHT = 22
 
@@ -84,3 +84,29 @@ def isAlive(cells, i, j):
     except IndexError:
         return False
 
+# for now only works with enter
+def pressKey(message):
+    input(message)
+
+# main
+
+# beautiful title if figlet is installed
+try:
+    os.system("figlet GAME OF LIFE")
+except:
+    print("GAME OF LIFE")
+print()
+
+first_batch = init(WIDTH, HEIGHT)[:]
+print("ESTAT INICIAL")
+print()
+print(cellsToStr(first_batch))
+pressKey("Prem ENTER per començar...")
+
+batch = first_batch[:]
+while True:
+    clear()
+    batch = updateState(batch)[:]
+    print(cellsToStr(batch))
+    # here goes if stable state: END / or inside updateState
+    time.sleep(0.75)
