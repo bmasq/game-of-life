@@ -9,8 +9,8 @@ clear = lambda : os.system("clear")
 CHARA = '\u2588'  # alive
 CHARD = ' ' # dead
 PROB = 0.1 # probability to birth a cell
-WIDTH = 7
-HEIGHT = 5
+WIDTH = 75
+HEIGHT = 15
 DELAY = 0.5 # delay between generations
 
 def init(width, length):
@@ -29,6 +29,25 @@ def cellsToStr(cells):
     for row in cells:
         out += ''.join(row) + '\n'
     return out
+
+def borderedCells(cells):
+    border_length = len(cells[0])
+    out = '+' + '-' * border_length + "+\n"
+    rows = ['|' + ''.join(row) + '|' for row in cells]
+    out += '\n'.join(rows) + '\n'
+    out += '+' + '-' * border_length + "+\n"
+    return out
+
+# failure in use of decorator
+""" # decorates the string of cells with upper and lower borders
+def wrapCells(func):
+    def wrapper(*args, **kwargs):
+        print('+' + '-'*len(args[0]) + '+\n')
+        print(func(*args, **kwargs))
+        print('+' + '-'*len(args[0]) + '+\n')
+    return wrapper()
+
+wrappedCells = wrapCells(cellsToStr) """
 
 # returns a new matrix of cells
 def updateState(cells):
@@ -51,7 +70,7 @@ def updateState(cells):
         print()
         print("The initial state was this:")
         print()
-        print(cellsToStr(firstBatch))
+        print(borderedCells(firstBatch))
         exit()
     return new
 
@@ -92,9 +111,12 @@ def pressKey(message):
 def display(cells, time0, gen):
     output = ""
     title()
+    # returns a tuple of ints
     now = clock(int(time.time()) - time0)
-    now = tuple("{:02d}".format(n) for n in now)
+    # converts the ints to strings
     now = map(str, now)
+    # adds a leading zero (if one digit)
+    now = tuple(s.zfill(2) for s in now)
     output += ':'.join(now) + "   "
     output += "Generation: {}   ".format(gen)
     cellCount = countCells(cells)
