@@ -8,8 +8,8 @@ clear = lambda : os.system("clear")
 CHARA = '\u2588'  # alive
 CHARD = ' ' # dead
 PROB = 0.5 # probability to birth a cell
-WIDTH = 78
-HEIGHT = 22
+WIDTH = 70
+HEIGHT = 15
 
 def init(width, length):
     cells = list()
@@ -88,25 +88,52 @@ def isAlive(cells, i, j):
 def pressKey(message):
     input(message)
 
-# main
+def display(cells, time0, gen):
+    output = ""
+    #timer
+    title()
+    output += "Generation: {}   ".format(gen)
+    cellCount = countCells(cells)
+    output += "Cells alive: {}   ".format(cellCount[0])
+    output += "Cells dead: {}".format(cellCount[1])
+    output += '\n' + '_'*len(cells[0]) + '\n'*2
+    print(output + cellsToStr(cells))
+
+def countCells(cells):
+    alive = 0
+    dead = 0
+    for row in cells:
+        alive += row.count(CHARA)
+        dead += row.count(CHARD)
+    return alive, dead
 
 # beautiful title if figlet is installed
-try:
-    os.system("figlet GAME OF LIFE")
-except:
-    print("GAME OF LIFE")
-print()
+def title():
+    try:
+        os.system("figlet GAME OF LIFE")
+    except:
+        print("GAME OF LIFE")
+    print()
 
-first_batch = init(WIDTH, HEIGHT)[:]
-print("ESTAT INICIAL")
-print()
-print(cellsToStr(first_batch))
-pressKey("Prem ENTER per començar...")
 
-batch = first_batch[:]
+# main
+
+clear()
+title()
+firstBatch = init(WIDTH, HEIGHT)[:]
+print("INITIAL STATE")
+print()
+print(cellsToStr(firstBatch))
+print()
+pressKey("Press ENTER to start...")
+startTime = time.time()
+
+batch = firstBatch[:]
+genCount = 0
 while True:
     clear()
     batch = updateState(batch)[:]
-    print(cellsToStr(batch))
+    genCount += 1
+    display(batch, startTime, genCount)
     # here goes if stable state: END / or inside updateState
     time.sleep(0.75)
