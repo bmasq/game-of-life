@@ -1,16 +1,17 @@
 import random
 import time
 import os
+import copy
 clear = lambda : os.system("clear")
 
 # sef-note: length, width, chars, etc. as arguments if not exception
 
 CHARA = '\u2588'  # alive
 CHARD = ' ' # dead
-PROB = 0.5 # probability to birth a cell
-WIDTH = 70
-HEIGHT = 15
-DELAY = 0.5
+PROB = 0.1 # probability to birth a cell
+WIDTH = 7
+HEIGHT = 5
+DELAY = 0.5 # delay between generations
 
 def init(width, length):
     cells = list()
@@ -31,7 +32,7 @@ def cellsToStr(cells):
 
 # returns a new matrix of cells
 def updateState(cells):
-    new = cells[:]
+    new = copy.deepcopy(cells)
     for i in range(len(cells)):
         for j in range(len(cells[0])):
             neighbours = countNeighbours(cells, i, j)
@@ -42,6 +43,16 @@ def updateState(cells):
             # A cell is born
             elif (not isAlive(cells, i, j) and neighbours == 3):
                 new[i][j] = CHARA
+    # if listsEqual(cells, new):
+    if cells == new:
+        clear()
+        display(new, startTime, genCount)
+        print("The game has reached a stable, ummutable state")
+        print()
+        print("The initial state was this:")
+        print()
+        print(cellsToStr(firstBatch))
+        exit()
     return new
 
 # counts the alive neighbours, horizontally, vertically and diagonally
@@ -90,7 +101,7 @@ def display(cells, time0, gen):
     output += "Cells: {}  ".format(cellCount[0])
     output += "Cells alive: {}   ".format(cellCount[1])
     output += "Cells dead: {}".format(cellCount[2])
-    output += '\n' + '_'*len(cells[0]) + '\n'*2
+    output += '\n' + '_'*len(output) + '\n'*2
     print(output + cellsToStr(cells))
 
 def countCells(cells):
@@ -109,6 +120,14 @@ def clock(s):
     s -= m*60
     return h, m, s
 
+# returns true if the two lists are exactly the same
+def listsEqual(l1, l2):
+    for a, b in zip(l1,l2):
+        for c, d in zip(a,b):
+            if c != d:
+                return False
+    return True
+
 # beautiful title if figlet is installed
 def title():
     try:
@@ -122,7 +141,7 @@ def title():
 
 clear()
 title()
-firstBatch = init(WIDTH, HEIGHT)[:]
+firstBatch = init(WIDTH, HEIGHT)
 print("INITIAL STATE")
 print()
 print(cellsToStr(firstBatch))
@@ -130,11 +149,11 @@ print()
 pressKey("Press ENTER to start...")
 startTime = int(time.time())
 
-batch = firstBatch[:]
+batch = copy.deepcopy(firstBatch)
 genCount = 0
 while True:
     clear()
-    batch = updateState(batch)[:]
+    batch = updateState(batch)
     genCount += 1
     display(batch, startTime, genCount)
     # here goes if stable state: END / or inside updateState
