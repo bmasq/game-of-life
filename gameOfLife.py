@@ -1,10 +1,14 @@
 import random
 import time
 import os
+import subprocess
 import copy
-clear = lambda : os.system("clear")
+import sys
 
-# sef-note: length, width, chars, etc. as arguments if not exception
+if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+    clear = lambda : os.system("clear")
+elif sys.platform.startswith("win"):
+    clear = lambda : os.system("cls")
 
 CHARA = '\u2588'  # alive
 CHARD = ' ' # dead
@@ -110,7 +114,6 @@ def pressKey(message):
 
 def display(cells, time0, gen):
     output = ""
-    title()
     # returns a tuple of ints
     now = clock(int(time.time()) - time0)
     # converts the ints to strings
@@ -123,6 +126,7 @@ def display(cells, time0, gen):
     output += "Cells: {}  ".format(cellCount[0])
     output += "Cells alive: {}   ".format(cellCount[1])
     output += "Cells dead: {}".format(cellCount[2])
+    title(len(output))
     output += '\n' + '_'*len(output) + '\n'*2
     print(output + cellsToStr(cells))
 
@@ -151,20 +155,21 @@ def listsEqual(l1, l2):
     return True
 
 # beautiful title if figlet is installed
-def title():
+def title(centred=0):
     try:
-        os.system("figlet GAME OF LIFE")
-    except:
-        print("GAME OF LIFE")
-    print()
+        subprocess.run(["figlet", "GAME OF LIFE"],
+                        check=True, stderr=subprocess.DEVNULL)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("GAME OF LIFE".center(centred))
+        print()
 
 
 # main
 
 clear()
-title()
+title(WIDTH)
 firstBatch = init(WIDTH, HEIGHT)
-print("INITIAL STATE")
+print("INITIAL STATE".center(WIDTH))
 print()
 print(cellsToStr(firstBatch))
 print()
