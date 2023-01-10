@@ -12,21 +12,45 @@ def setConstants(**kwargs):
     CHARA = '\u2588'
     CHARD = ' '
 
-    PROB = float(kwargs.get("prob", 0.3))
-    if not isinstance(PROB, float):
-        raise ValueError("Invalid value for 'prob', it should be decimal.")
+    PROB = float(kwargs.get("prob", 0.3)) / 100
+    if not isinstance(PROB, float) or PROB <= 0:
+        raise ValueError("Invalid value for 'prob', it should be a positive decimal.")
 
     DELAY = float(kwargs.get("delay", 0.5))
-    if not isinstance(DELAY, float):
-        raise ValueError("Invalid value for 'delay', it should be decimal.")
+    if not isinstance(DELAY, float) or DELAY <= 0:
+        raise ValueError("Invalid value for 'delay', it should be a positive decimal.")
     
     WIDTH = int(kwargs.get("width", 75))
-    if not isinstance(WIDTH, int):
-        raise ValueError("Invalid value for 'width', it should be an integer.")
+    if not isinstance(WIDTH, int) or WIDTH <= 0:
+        raise ValueError("Invalid value for 'width', it should be a positive integer.")
     
     HEIGHT = int(kwargs.get("height", 15))
-    if not isinstance(HEIGHT, int):
-        raise ValueError("Invalid value for 'height', it should be an integer.")
+    if not isinstance(HEIGHT, int) or HEIGHT <= 0:
+        raise ValueError("Invalid value for 'height', it should be a positive integer.")
+
+def displayHelp():
+    text="""
+usage: python3 {filename} [prob=<decimal>] [delay=<seconds>] [width=<integer>] [height=<integer>] [-h | --help]
+
+PARAMETERS
+
+    prob
+        Probability in percentage (do not include '%') that a cell starts alive
+    
+    delay
+        Seconds between each generation (can be in fractions of a second)
+
+    width
+        Number of cells horizontally
+    
+    height
+        Number of cells vertically
+
+    -h, --help
+        Displays this help
+    
+    """.format(filename=sys.argv[0].split(os.sep)[-1])
+    print(text)
 
 def init(width, height):
     cells = list()
@@ -187,15 +211,19 @@ else:
     exit()
 
 # Constants initialization (defalut, as args or from input)
-if len(sys.argv) <= 1:
-    setConstants()
-    # menu()
-elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
-    pass # display help
+try:
+    if len(sys.argv) <= 1:
+        setConstants()
+        # menu()
+    elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
+        displayHelp()
+        exit()
+    else:
+        args = dict(arg.split('=') for arg in sys.argv[1:])
+        setConstants(**args)
+except ValueError:
+    displayHelp()
     exit()
-else:
-    args = dict(arg.split('=') for arg in sys.argv[1:])
-    setConstants(**args)
 
 #program starts
 try:
