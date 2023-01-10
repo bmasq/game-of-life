@@ -5,6 +5,48 @@ import subprocess
 import copy
 import sys
 
+def main():
+    # Constants initialization (defalut, as args or from input)
+    try:
+        if len(sys.argv) <= 1:
+            setConstants()
+            # menu()
+        elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
+            displayHelp()
+            exit()
+        else:
+            args = dict(arg.split('=') for arg in sys.argv[1:])
+            setConstants(**args)
+    except ValueError as e:
+        print("\nERROR: " + e.args[0])
+        displayHelp()
+        exit()
+    global firstBatch, startTime, genCount
+
+    #program starts
+    try:
+        clear()
+        title(WIDTH)
+        firstBatch = init(WIDTH, HEIGHT)
+        print("INITIAL STATE".center(WIDTH))
+        print()
+        print(cellsToStr(firstBatch))
+        print()
+        pressKey("Press ENTER to start...")
+        startTime = int(time.time())
+
+        batch = copy.deepcopy(firstBatch)
+        genCount = 0
+        while True:
+            clear()
+            batch = updateState(batch)
+            genCount += 1
+            display(batch, startTime, genCount)
+            # here goes if stable state: END / or inside updateState
+            time.sleep(DELAY)
+    except KeyboardInterrupt:
+        print("\nProgram terminated\n")
+
 def setConstants(**kwargs):
     # alive, dead,
     # probability of a cell to start alive, delay between generations
@@ -210,41 +252,6 @@ else:
     print("Your OS seems to be incompatible...")
     exit()
 
-# Constants initialization (defalut, as args or from input)
-try:
-    if len(sys.argv) <= 1:
-        setConstants()
-        # menu()
-    elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
-        displayHelp()
-        exit()
-    else:
-        args = dict(arg.split('=') for arg in sys.argv[1:])
-        setConstants(**args)
-except ValueError:
-    displayHelp()
-    exit()
+###
 
-#program starts
-try:
-    clear()
-    title(WIDTH)
-    firstBatch = init(WIDTH, HEIGHT)
-    print("INITIAL STATE".center(WIDTH))
-    print()
-    print(cellsToStr(firstBatch))
-    print()
-    pressKey("Press ENTER to start...")
-    startTime = int(time.time())
-
-    batch = copy.deepcopy(firstBatch)
-    genCount = 0
-    while True:
-        clear()
-        batch = updateState(batch)
-        genCount += 1
-        display(batch, startTime, genCount)
-        # here goes if stable state: END / or inside updateState
-        time.sleep(DELAY)
-except KeyboardInterrupt:
-    print("\nProgram terminated\n")
+main()
