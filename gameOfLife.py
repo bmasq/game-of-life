@@ -5,21 +5,32 @@ import subprocess
 import copy
 import sys
 
-if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
-    clear = lambda : os.system("clear")
-elif sys.platform.startswith("win"):
-    clear = lambda : os.system("cls")
+def setConstants(**kwargs):
+    # alive, dead,
+    # probability of a cell to start alive, delay between generations
+    global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT
+    CHARA = '\u2588'
+    CHARD = ' '
 
-CHARA = '\u2588'  # alive
-CHARD = ' ' # dead
-PROB = 0.1 # probability to birth a cell
-WIDTH = 75
-HEIGHT = 15
-DELAY = 0.5 # delay between generations
+    PROB = float(kwargs.get("prob", 0.3))
+    if not isinstance(PROB, float):
+        raise ValueError("Invalid value for 'prob', it should be decimal.")
 
-def init(width, length):
+    DELAY = float(kwargs.get("delay", 0.5))
+    if not isinstance(DELAY, float):
+        raise ValueError("Invalid value for 'delay', it should be decimal.")
+    
+    WIDTH = int(kwargs.get("width", 75))
+    if not isinstance(WIDTH, int):
+        raise ValueError("Invalid value for 'width', it should be an integer.")
+    
+    HEIGHT = int(kwargs.get("height", 15))
+    if not isinstance(HEIGHT, int):
+        raise ValueError("Invalid value for 'height', it should be an integer.")
+
+def init(width, height):
     cells = list()
-    for i in range(length):
+    for i in range(height):
         cells.append(list())
         for j in range(width):
             if random.random() < PROB:
@@ -120,12 +131,12 @@ def display(cells, time0, gen):
     now = map(str, now)
     # adds a leading zero (if one digit)
     now = tuple(s.zfill(2) for s in now)
-    output += ':'.join(now) + "   "
+    output += "Elapsed time " + ':'.join(now) + "   "
     output += "Generation: {}   ".format(gen)
     cellCount = countCells(cells)
     output += "Cells: {}  ".format(cellCount[0])
-    output += "Cells alive: {}   ".format(cellCount[1])
-    output += "Cells dead: {}".format(cellCount[2])
+    output += "Alive: {}   ".format(cellCount[1])
+    output += "Dead: {}".format(cellCount[2])
     title(len(output))
     output += '\n' + '_'*len(output) + '\n'*2
     print(output + cellsToStr(cells))
@@ -166,22 +177,46 @@ def title(centred=0):
 
 # main
 
-clear()
-title(WIDTH)
-firstBatch = init(WIDTH, HEIGHT)
-print("INITIAL STATE".center(WIDTH))
-print()
-print(cellsToStr(firstBatch))
-print()
-pressKey("Press ENTER to start...")
-startTime = int(time.time())
+# makes clear function cross-platform
+if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+    clear = lambda : os.system("clear")
+elif sys.platform.startswith("win"):
+    clear = lambda : os.system("cls")
+else:
+    print("Your OS seems to be incompatible...")
+    exit()
 
-batch = copy.deepcopy(firstBatch)
-genCount = 0
-while True:
+# Constants initialization (defalut, as args or from input)
+if len(sys.argv) <= 1:
+    setConstants()
+    # menu()
+elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
+    pass # display help
+    exit()
+else:
+    args = dict(arg.split('=') for arg in sys.argv[1:])
+    setConstants(**args)
+
+#program starts
+try:
     clear()
-    batch = updateState(batch)
-    genCount += 1
-    display(batch, startTime, genCount)
-    # here goes if stable state: END / or inside updateState
-    time.sleep(DELAY)
+    title(WIDTH)
+    firstBatch = init(WIDTH, HEIGHT)
+    print("INITIAL STATE".center(WIDTH))
+    print()
+    print(cellsToStr(firstBatch))
+    print()
+    pressKey("Press ENTER to start...")
+    startTime = int(time.time())
+
+    batch = copy.deepcopy(firstBatch)
+    genCount = 0
+    while True:
+        clear()
+        batch = updateState(batch)
+        genCount += 1
+        display(batch, startTime, genCount)
+        # here goes if stable state: END / or inside updateState
+        time.sleep(DELAY)
+except KeyboardInterrupt:
+    print("\nProgram terminated\n")

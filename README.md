@@ -13,6 +13,7 @@
 #### *Notes mentals*
 
 - *Constants inicials customitzables*
+- - *OK. Falta menú*
 - *Opció guardar estat inicial dins fitxer*
 - *¡¡¡ Detectar cicles i aturar !!!*
 - (((Virt env amb pyfiglet)))
