@@ -5,6 +5,15 @@ import subprocess
 import copy
 import sys
 
+# makes clear function cross-platform
+if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+    clear = lambda : os.system("clear")
+elif sys.platform.startswith("win"):
+    clear = lambda : os.system("cls")
+else:
+    print("Your OS seems to be incompatible...")
+    exit()
+
 def main():
     # Constants initialization (defalut, as args or from input)
     try:
@@ -17,7 +26,7 @@ def main():
         else:
             args = dict(arg.split('=') for arg in sys.argv[1:])
             setConstants(**args)
-    except ValueError as e:
+    except (ValueError, KeyError) as e:
         print("\nERROR: " + e.args[0])
         displayHelp()
         exit()
@@ -47,9 +56,15 @@ def main():
     except KeyboardInterrupt:
         print("\nProgram terminated\n")
 
+###
+
 def setConstants(**kwargs):
-    # alive, dead,
-    # probability of a cell to start alive, delay between generations
+    # checks for typos
+    validParams = ["prob", "delay", "width", "height"]
+    for param in kwargs.keys():
+        if param not in validParams:
+            raise KeyError("'{}': invalid parameter".format(param))
+    # alive, dead, probability of a cell to start alive, delay between generations
     global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT
     CHARA = '\u2588'
     CHARD = ' '
@@ -239,18 +254,6 @@ def title(centred=0):
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("GAME OF LIFE".center(centred))
         print()
-
-
-# main
-
-# makes clear function cross-platform
-if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
-    clear = lambda : os.system("clear")
-elif sys.platform.startswith("win"):
-    clear = lambda : os.system("cls")
-else:
-    print("Your OS seems to be incompatible...")
-    exit()
 
 ###
 

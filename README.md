@@ -17,3 +17,4 @@
 - *Opció guardar estat inicial dins fitxer*
 - *¡¡¡ Detectar cicles i aturar !!!*
 - (((Virt env amb pyfiglet)))
+- *Press enter to continue > fix*
