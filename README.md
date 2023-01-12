@@ -10,6 +10,14 @@
 
 ---
 
+## Description
+
+The game stops on interrupt signal or when it reaches a still-live state, user-set maximum of generations or time
+
+*To be continued...*
+
+---
+
 #### *Notes mentals*
 
 - *Constants inicials customitzables*
@@ -19,3 +27,4 @@
 - (((Virt env amb pyfiglet)))
 - *Press enter to continue > fix*
 - *Additionally, you could also consider adding a feature that allows the user to specify how many generations they want to run the simulation for before checking for a cycle.*
+- *maxGens i maxTime customitzables*

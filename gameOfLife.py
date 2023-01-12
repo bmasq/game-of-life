@@ -4,6 +4,8 @@ import os
 import subprocess
 import copy
 import sys
+import math
+import re
 
 def main():
     # makes clear function cross-platform
@@ -70,12 +72,12 @@ def main():
 
 def setConstants(**kwargs):
     # checks for typos
-    validParams = ["prob", "delay", "width", "height"]
+    validParams = ["prob", "delay", "width", "height", "time", "gens"]
     for param in kwargs.keys():
         if param not in validParams:
             raise KeyError("'{}': invalid parameter".format(param))
     # alive, dead, probability of a cell to start alive, delay between generations
-    global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT
+    global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT, GENMAX, MAXTIME
     CHARA = '\u2588'
     CHARD = ' '
 
@@ -94,10 +96,27 @@ def setConstants(**kwargs):
     HEIGHT = int(kwargs.get("height", 15))
     if not isinstance(HEIGHT, int) or HEIGHT <= 0:
         raise ValueError("Invalid value for 'height', it should be a positive integer.")
+    
+    MAXTIME = kwargs.get("time", math.inf)
+    # Xdies | Xhores | Xminuts | X[segons] | [h]:m:s
+    match = re.search("^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$",
+                        str(MAXTIME))
+    matches = match != None
+    if matches:
+        MAXTIME = strToSeconds(MAXTIME)
+    elif (MAXTIME != math.inf or MAXTIME <= 0):
+        raise ValueError("Invalid value for 'time', it should be a positive integer or a correct expression.")
+    
+    try:
+        GENMAX = int(kwargs.get("gens", math.inf))
+        if (not isinstance(GENMAX, int) or GENMAX != math.inf) or GENMAX <= 0:
+            raise ValueError("Invalid value for 'gens', it should be a positive integer.")
+    except OverflowError:
+        GENMAX = math.inf
 
 def displayHelp():
     text="""
-usage: python3 {filename} [prob=<decimal>] [delay=<seconds>] [width=<integer>] [height=<integer>] [-h | --help]
+usage: python3 {filename} [prob=<decimal>] [delay=<seconds>] [width=<integer>] [height=<integer>] [time=<expr>] [gens=<integer>] [-h | --help]
 
 PARAMETERS
 
@@ -112,6 +131,13 @@ PARAMETERS
     
     height
         Number of cells vertically
+
+    time
+        Expression for the time the program will run (n is an integer):
+            {{nd|nh|nm|n[s]}}| {{[h:]m:s}}
+
+    gens
+        Number of generations where the program will stop when reached
 
     -h, --help
         Displays this help
@@ -247,6 +273,39 @@ def clock(s):
     m = s // 60
     s -= m*60
     return h, m, s
+
+# converts a string matching the desired pattern (setConstants) into an int
+def strToSeconds(st):
+    def days(d):
+        return round(int(d)/24/3600)
+    def hours(h):
+        return round(int(h)/3600)
+    def minutes(m):
+        return round(int(m)/60)
+
+    sec = 0
+    lis = st.split(':')
+    if len(lis) == 1:
+        st = lis[0]
+        if st.endswith('d'):
+            return days(st.rstrip('d'))
+        elif st.endswith('h'):
+            return hours(st.rstrip('h'))
+        elif st.endswith('m'):
+            return minutes(st.rstrip('m'))
+        elif st.endswith('s'):
+            return int(st.rstrip('s'))
+        else:
+            return int(st)
+    elif len(lis) == 2:
+        sec += minutes(lis[0])
+        sec += int(lis[1])
+        return sec
+    elif len(lis) == 3:
+        sec += hours(lis[0])
+        sec += minutes(lis[1])
+        sec += int(lis[2])
+        return sec
 
 # beautiful title if figlet is installed
 def title(centred=0):
