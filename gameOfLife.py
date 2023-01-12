@@ -5,16 +5,17 @@ import subprocess
 import copy
 import sys
 
-# makes clear function cross-platform
-if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
-    clear = lambda : os.system("clear")
-elif sys.platform.startswith("win"):
-    clear = lambda : os.system("cls")
-else:
-    print("Your OS seems to be incompatible...")
-    exit()
-
 def main():
+    # makes clear function cross-platform
+    global clear
+    if sys.platform.startswith("linux") or sys.platform.startswith("darwin"):
+        clear = lambda : os.system("clear")
+    elif sys.platform.startswith("win"):
+        clear = lambda : os.system("cls")
+    else:
+        print("Your OS seems to be incompatible...")
+        exit()
+
     # Constants initialization (defalut, as args or from input)
     try:
         if len(sys.argv) <= 1:
@@ -30,7 +31,6 @@ def main():
         print("\nERROR: " + e.args[0])
         displayHelp()
         exit()
-    global firstBatch, startTime, genCount
 
     #program starts
     try:
@@ -48,7 +48,17 @@ def main():
         genCount = 0
         while True:
             clear()
-            batch = updateState(batch)
+            updateRes = updateState(batch)
+            batch = updateRes[0]
+            if updateRes[1]: # true if reached still-live
+                clear()
+                display(batch, startTime, genCount)
+                print("The game has reached a still-live state")
+                print()
+                print("The initial state was this:")
+                print()
+                print(borderedCells(firstBatch))
+                exit()
             genCount += 1
             display(batch, startTime, genCount)
             # here goes if stable state: END / or inside updateState
@@ -145,7 +155,8 @@ def wrapCells(func):
 
 wrappedCells = wrapCells(cellsToStr) """
 
-# returns a new matrix of cells
+# returns the new generation of cells,
+# and true if it is equal to the previous one
 def updateState(cells):
     new = copy.deepcopy(cells)
     for i in range(len(cells)):
@@ -158,17 +169,16 @@ def updateState(cells):
             # A cell is born
             elif (not isAlive(cells, i, j) and neighbours == 3):
                 new[i][j] = CHARA
-    # if listsEqual(cells, new):
-    if cells == new:
-        clear()
-        display(new, startTime, genCount)
-        print("The game has reached a stable, ummutable state")
-        print()
-        print("The initial state was this:")
-        print()
-        print(borderedCells(firstBatch))
-        exit()
-    return new
+    # if cells == new:
+    #     clear()
+    #     display(new, startTime, genCount)
+    #     print("The game has reached a stable, ummutable state")
+    #     print()
+    #     print("The initial state was this:")
+    #     print()
+    #     print(borderedCells(firstBatch))
+    #     exit()
+    return new, cells == new
 
 # counts the alive neighbours, horizontally, vertically and diagonally
 def countNeighbours(cells, i, j):
@@ -237,14 +247,6 @@ def clock(s):
     m = s // 60
     s -= m*60
     return h, m, s
-
-# returns true if the two lists are exactly the same
-def listsEqual(l1, l2):
-    for a, b in zip(l1,l2):
-        for c, d in zip(a,b):
-            if c != d:
-                return False
-    return True
 
 # beautiful title if figlet is installed
 def title(centred=0):
