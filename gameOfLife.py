@@ -38,32 +38,30 @@ def main():
     try:
         clear()
         title(WIDTH)
-        firstBatch = init(WIDTH, HEIGHT)
         print("INITIAL STATE".center(WIDTH))
         print()
-        print(cellsToStr(firstBatch))
+        print(cellsToStr(FIRST_BATCH))
         print()
         pressKey("Press ENTER to start...")
         startTime = int(time.time())
 
-        batch = copy.deepcopy(firstBatch)
+        batch = copy.deepcopy(FIRST_BATCH)
         genCount = 0
         while True:
             clear()
             updateRes = updateState(batch)
             batch = updateRes[0]
-            if updateRes[1]: # true if reached still-live
-                clear()
-                display(batch, startTime, genCount)
-                print("The game has reached a still-live state")
-                print()
-                print("The initial state was this:")
-                print()
-                print(borderedCells(firstBatch))
-                exit()
+            if updateRes[1]:
+                stop(batch, startTime, genCount,
+                    "The game has reached a still-live state")
+            elif genCount >= GENMAX:
+                stop(batch, startTime, genCount,
+                    "The game has reached the maximum number of generations")
+            elif (int(time.time() - startTime)) >= MAXTIME:
+                stop(batch, startTime, genCount,
+                    "The game has reached the maximum time limit")
             genCount += 1
             display(batch, startTime, genCount)
-            # here goes if stable state: END / or inside updateState
             time.sleep(DELAY)
     except KeyboardInterrupt:
         print("\nProgram terminated\n")
@@ -77,11 +75,11 @@ def setConstants(**kwargs):
         if param not in validParams:
             raise KeyError("'{}': invalid parameter".format(param))
     # alive, dead, probability of a cell to start alive, delay between generations
-    global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT, GENMAX, MAXTIME
+    global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT, GENMAX, MAXTIME, FIRST_BATCH
     CHARA = '\u2588'
     CHARD = ' '
 
-    PROB = float(kwargs.get("prob", 0.3)) / 100
+    PROB = float(kwargs.get("prob", 30)) / 100
     if not isinstance(PROB, float) or PROB <= 0:
         raise ValueError("Invalid value for 'prob', it should be a positive decimal.")
 
@@ -109,10 +107,13 @@ def setConstants(**kwargs):
     
     try:
         GENMAX = int(kwargs.get("gens", math.inf))
-        if (not isinstance(GENMAX, int) or GENMAX != math.inf) or GENMAX <= 0:
+        # not sure about this expression, but it works
+        if (not isinstance(GENMAX, int) and GENMAX != math.inf) or GENMAX <= 0:
             raise ValueError("Invalid value for 'gens', it should be a positive integer.")
     except OverflowError:
         GENMAX = math.inf
+
+    FIRST_BATCH = init(WIDTH, HEIGHT)
 
 def displayHelp():
     text="""
@@ -134,7 +135,7 @@ PARAMETERS
 
     time
         Expression for the time the program will run (n is an integer):
-            {{nd|nh|nm|n[s]}}| {{[h:]m:s}}
+            {{nd|nh|nm|n[s]}} | {{[h:]m:s}}
 
     gens
         Number of generations where the program will stop when reached
@@ -195,15 +196,6 @@ def updateState(cells):
             # A cell is born
             elif (not isAlive(cells, i, j) and neighbours == 3):
                 new[i][j] = CHARA
-    # if cells == new:
-    #     clear()
-    #     display(new, startTime, genCount)
-    #     print("The game has reached a stable, ummutable state")
-    #     print()
-    #     print("The initial state was this:")
-    #     print()
-    #     print(borderedCells(firstBatch))
-    #     exit()
     return new, cells == new
 
 # counts the alive neighbours, horizontally, vertically and diagonally
@@ -265,6 +257,18 @@ def countCells(cells):
         alive += row.count(CHARA)
         dead += row.count(CHARD)
     return alive+dead, alive, dead
+
+# stops the program displaying a message
+def stop(cells, startTime, genCount, message=""):
+    pass
+    clear()
+    display(cells, startTime, genCount)
+    print(message)
+    print()
+    print("The initial state was this:")
+    print()
+    print(borderedCells(FIRST_BATCH))
+    exit()
 
 # converts a time in seconds to hours, minutes and seconds
 def clock(s):
