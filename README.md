@@ -18,3 +18,4 @@
 - *¡¡¡ Detectar cicles i aturar !!!*
 - (((Virt env amb pyfiglet)))
 - *Press enter to continue > fix*
+- *Additionally, you could also consider adding a feature that allows the user to specify how many generations they want to run the simulation for before checking for a cycle.*
