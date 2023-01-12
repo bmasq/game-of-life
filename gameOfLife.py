@@ -146,25 +146,30 @@ PARAMETERS
 
     prob
         Probability in percentage (do not include '%') that a cell starts alive
+        default=30
     
     delay
         Seconds between each generation (can be in fractions of a second)
+        default=0.5
 
-    width
-        Number of cells horizontally
-    
-    height
-        Number of cells vertically
+    width, height
+        Number of cells horizontally and vertically (cells are monospace characters, they occupy rectangular spaces)
+        defaultWidth=75
+        defaultHeight=15
 
     time
         Expression for the time the program will run (n is an integer):
-            {{nd|nh|nm|n[s]}} | {{[h:]m:s}}
+        expression={{nd|nh|nm|n[s]}} | {{[h:]m:s}}
+        default=infinite
 
     gens
         Number of generations where the program will stop when reached
+        default=infinite
+        
 
     period
         Number of generations it will check to find a cycling pattern
+        default=10
 
     -h, --help
         Displays this help
