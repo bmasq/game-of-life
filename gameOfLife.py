@@ -95,7 +95,7 @@ def setConstants(**kwargs):
     # alive, dead, probability of a cell to start alive, delay between generations
     global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT
     global  GENMAX, MAXTIME, FIRST_BATCH, PERIOD
-    CHARA = '\u2588'
+    CHARA = '\u2588' # this character █
     CHARD = ' '
 
     PROB = float(kwargs.get("prob", 30)) / 100
@@ -140,7 +140,7 @@ def setConstants(**kwargs):
 
 def displayHelp():
     text="""
-usage: python3 {filename} [prob=<decimal>] [delay=<seconds>] [width=<integer>] [height=<integer>] [time=<expr>] [gens=<integer>] [-h | --help]
+usage: python3 {filename} [prob=<decimal>] [delay=<seconds>] [width=<integer>] [height=<integer>] [time=<expr>] [gens=<integer>] [period=<integer>] [-h | --help]
 
 PARAMETERS
 
@@ -162,6 +162,9 @@ PARAMETERS
 
     gens
         Number of generations where the program will stop when reached
+
+    period
+        Number of generations it will check to find a cycling pattern
 
     -h, --help
         Displays this help
