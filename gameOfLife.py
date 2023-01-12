@@ -33,6 +33,9 @@ def main():
         print("\nERROR: " + e.args[0])
         displayHelp()
         exit()
+    # it will be used to store a past state and check for cycles
+    pastState = {"cells":[], "gen":0, "count":0}
+    cycleDetected = False
 
     #program starts
     try:
@@ -43,10 +46,10 @@ def main():
         print(cellsToStr(FIRST_BATCH))
         print()
         pressKey("Press ENTER to start...")
-        startTime = int(time.time())
-
         batch = copy.deepcopy(FIRST_BATCH)
         genCount = 0
+        startTime = int(time.time())
+
         while True:
             clear()
             updateRes = updateState(batch)
@@ -62,20 +65,36 @@ def main():
                     "The game has reached the maximum time limit")
             genCount += 1
             display(batch, startTime, genCount)
+            if not cycleDetected:
+              res = cycleCheck(pastState, batch, genCount)
+              cycleDetected = res[0]
+              period = res[1] + 1
+            else:
+                print("A cycle of period {} has been detected, the cells will not evolve further".format(period))
             time.sleep(DELAY)
     except KeyboardInterrupt:
-        print("\nProgram terminated\n")
+        try:
+            clear()
+            cycle = ""
+            if cycleDetected:
+                cycle = "\nThe cells were cycling with a period of {}".format(period)
+            stop(batch, startTime, genCount,
+                "\nProgram terminated\n" + cycle)
+        # if KeyboardInterrupt is pressed before start
+        except UnboundLocalError:
+            pass
 
 ###
 
 def setConstants(**kwargs):
     # checks for typos
-    validParams = ["prob", "delay", "width", "height", "time", "gens"]
+    validParams = ["prob", "delay", "width", "height", "time", "gens", "period"]
     for param in kwargs.keys():
         if param not in validParams:
             raise KeyError("'{}': invalid parameter".format(param))
     # alive, dead, probability of a cell to start alive, delay between generations
-    global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT, GENMAX, MAXTIME, FIRST_BATCH
+    global CHARA, CHARD, PROB, DELAY, WIDTH, HEIGHT
+    global  GENMAX, MAXTIME, FIRST_BATCH, PERIOD
     CHARA = '\u2588'
     CHARD = ' '
 
@@ -114,6 +133,10 @@ def setConstants(**kwargs):
         GENMAX = math.inf
 
     FIRST_BATCH = init(WIDTH, HEIGHT)
+    
+    PERIOD = int(kwargs.get("period", 10))
+    if not isinstance(PERIOD, int) or PERIOD <= 0:
+        raise ValueError("Invalid value for 'period', it should be a positive integer.")
 
 def displayHelp():
     text="""
@@ -197,6 +220,17 @@ def updateState(cells):
             elif (not isAlive(cells, i, j) and neighbours == 3):
                 new[i][j] = CHARA
     return new, cells == new
+
+# checks if the program is in a cycle
+# past -> {"cells":list, "gen":int, "count":int}
+def cycleCheck(past, current, currGen):
+    if past["cells"] == current and (past["gen"] + PERIOD) >= currGen:
+        past["count"] += 1
+    elif not (past["gen"] + PERIOD) >= currGen:
+        past["cells"] = copy.deepcopy(current)
+        past["gen"] = currGen
+        past["count"] = 0
+    return past["count"] >= 1, past["count"]
 
 # counts the alive neighbours, horizontally, vertically and diagonally
 def countNeighbours(cells, i, j):
