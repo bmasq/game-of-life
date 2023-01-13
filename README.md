@@ -20,5 +20,4 @@ The game stops on interrupt signal or when it reaches a still-live state, user-s
 
 #### *Notes mentals*
 
-- *Falta menú*
 - *Press enter to continue > arreglar*

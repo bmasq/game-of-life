@@ -77,7 +77,7 @@ def main():
             if cycleDetected:
                 cycle = "\nThe cells were cycling with a period of {}".format(period)
             stop(batch, startTime, genCount,
-                "\nProgram terminated\n" + cycle)
+                "\nProgram terminated by user\n" + cycle)
         # if KeyboardInterrupt is pressed before start
         except UnboundLocalError:
             pass
@@ -119,7 +119,7 @@ DEFAULT VALUES:
 def paramsMenu():
     keys = iter(["width", "height", "prob", "delay", "time", "gens", "period"])
     params = dict()
-    print("Leave blank for default value\n")
+    print("\nLeave blank for default value\n")
     try:
         params[next(keys)] = tryInput("Horizontal cells? ", "^$|^[0-9]+$")
         params[next(keys)] = tryInput("Vertical cells? ", "^$|^[0-9]+$")
@@ -131,7 +131,8 @@ def paramsMenu():
         params[next(keys)] = tryInput("Maximum number of generations? ", "^$|^[0-9]+$")
         params[next(keys)] = tryInput("Cycling period? ", "^$|^[0-9]+$")
         # removes empty strings, so the params will be set to default
-        for key, val in params.items():
+        aux = copy.deepcopy(params)
+        for key, val in aux.items():
             if val == "":
                 params.pop(key)
         setConstants(**params)
