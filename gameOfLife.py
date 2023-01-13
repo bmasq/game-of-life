@@ -117,7 +117,21 @@ DEFAULT VALUES:
         raise
 
 def paramsMenu():
-    keys = iter(["width", "height", "prob", "delay", "time", "gens", "period"])
+    keyLis = ["width", "height", "prob", "delay", "time", "gens", "period"]
+    friendlyNames = [
+        "Horizontal cells",
+        "Vertical cells",
+        "Probability",
+        "Seconds between generations",
+        "Maximum running time",
+        "Maximum number of generations",
+        "Cycling period"
+        ]
+    # builds a dict relating code keys with user friendly names
+    friendly = dict()
+    for k, f in zip(keyLis, friendlyNames):
+        friendly[k] = f
+    keys = iter(keyLis)
     params = dict()
     print("\nLeave blank for default value\n")
     try:
@@ -136,8 +150,29 @@ def paramsMenu():
             if val == "":
                 params.pop(key)
         setConstants(**params)
-    except (KeyboardInterrupt, ValueError):
+    except KeyboardInterrupt:
         raise
+    # gets only the wrong parameter
+    # and asks the user to correct it
+    except ValueError as e:
+        ok = False
+        while not ok:
+            try:
+                key = e.args[1]
+                print("\nWrong value for {}\n".format(friendly[key]))
+                if key in ["width", "height", "gens", "period"]:
+                    params[key] = tryInput("Please, try again: ", "^$|^[0-9]+$")
+                elif key in ["prob", "delay"]:
+                    params[key] = tryInput("Please, try again: ", "^$|^[0-9]+(.[0-9]+)?$")
+                elif key == "time":
+                    params[key] = tryInput("Please, try again: ",
+                "^$|^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$")
+                setConstants(**params)
+                ok = True
+            except ValueError:
+                ok = False
+            except KeyboardInterrupt:
+                raise
     
 def tryInput(question, regex):
     ok = False
@@ -165,19 +200,19 @@ def setConstants(**kwargs):
 
     PROB = float(kwargs.get("prob", 30)) / 100
     if not isinstance(PROB, float) or PROB <= 0:
-        raise ValueError("Invalid value for 'prob', it should be a positive decimal.")
+        raise ValueError("Invalid value for 'prob', it should be a positive decimal.", "prob")
 
     DELAY = float(kwargs.get("delay", 0.5))
     if not isinstance(DELAY, float) or DELAY <= 0:
-        raise ValueError("Invalid value for 'delay', it should be a positive decimal.")
+        raise ValueError("Invalid value for 'delay', it should be a positive decimal.", "delay")
     
     WIDTH = int(kwargs.get("width", 75))
     if not isinstance(WIDTH, int) or WIDTH <= 0:
-        raise ValueError("Invalid value for 'width', it should be a positive integer.")
+        raise ValueError("Invalid value for 'width', it should be a positive integer.", "width")
     
     HEIGHT = int(kwargs.get("height", 15))
     if not isinstance(HEIGHT, int) or HEIGHT <= 0:
-        raise ValueError("Invalid value for 'height', it should be a positive integer.")
+        raise ValueError("Invalid value for 'height', it should be a positive integer.", "height")
     
     MAXTIME = kwargs.get("time", math.inf)
     if matches(str(MAXTIME),
@@ -185,7 +220,7 @@ def setConstants(**kwargs):
     "^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$"):
         MAXTIME = strToSeconds(MAXTIME)
     elif (MAXTIME != math.inf or MAXTIME <= 0):
-        raise ValueError("Invalid value for 'time', it should be a positive integer or a correct expression.")
+        raise ValueError("Invalid value for 'time', it should be a positive integer or a correct expression.", "time")
     
     try:
         GENMAX = int(kwargs.get("gens", math.inf))
