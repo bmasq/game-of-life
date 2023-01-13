@@ -20,7 +20,5 @@ The game stops on interrupt signal or when it reaches a still-live state, user-s
 
 #### *Notes mentals*
 
-- *Constants inicials customitzables*
-- - *OK. Falta menú*
+- *Falta menú*
 - *Press enter to continue > arreglar*
-- *Additionally, you could also consider adding a feature that allows the user to specify how many generations they want to run the simulation for before checking for a cycle.*

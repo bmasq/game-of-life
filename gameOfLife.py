@@ -86,6 +86,33 @@ def main():
 
 ###
 
+def mainMenu():
+    keys = ["prob", "delay", "width", "height", "time", "gens", "period"]
+    params = dict()
+
+    message = """
+DEFAULT VALUES:
+- Horizontal cells_____________________75
+- Vertical cells_______________________15
+  (cells are rectangular characters)
+- Probability__________________________30%
+  (of a cell to be alive at the start)
+- Secons between generations___________0.5
+- Maximum running time_________________infinite
+- Maximum number of generations________infinite
+- Cycling period_______________________10
+  (number of generations it will check
+  to find a cycling pattern)
+    """
+    title()
+    print()
+    print(message)
+    print()
+    ok = False
+    while not ok:
+        answ = 0
+
+
 def setConstants(**kwargs):
     # checks for typos
     validParams = ["prob", "delay", "width", "height", "time", "gens", "period"]
@@ -116,10 +143,11 @@ def setConstants(**kwargs):
     
     MAXTIME = kwargs.get("time", math.inf)
     # Xdies | Xhores | Xminuts | X[segons] | [h]:m:s
-    match = re.search("^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$",
-                        str(MAXTIME))
-    matches = match != None
-    if matches:
+    # match = re.search("^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$",
+    #                     str(MAXTIME))
+    # matches = match != None
+    if matches(MAXTIME,
+    "^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$"):
         MAXTIME = strToSeconds(MAXTIME)
     elif (MAXTIME != math.inf or MAXTIME <= 0):
         raise ValueError("Invalid value for 'time', it should be a positive integer or a correct expression.")
@@ -312,6 +340,11 @@ def stop(cells, startTime, genCount, message=""):
     print(borderedCells(FIRST_BATCH))
     exit()
 
+# returns true if 1st param matches regex (2n param)
+def matches(chars, regex):
+    match = re.search(regex, chars)
+    return match != None
+
 # converts a time in seconds to hours, minutes and seconds
 def clock(s):
     h = s // 3600
@@ -323,11 +356,11 @@ def clock(s):
 # converts a string matching the desired pattern (setConstants) into an int
 def strToSeconds(st):
     def days(d):
-        return round(int(d)/24/3600)
+        return round(int(d)*24*3600)
     def hours(h):
-        return round(int(h)/3600)
+        return round(int(h)*3600)
     def minutes(m):
-        return round(int(m)/60)
+        return round(int(m)*60)
 
     sec = 0
     lis = st.split(':')
@@ -358,6 +391,7 @@ def title(centred=0):
     try:
         subprocess.run(["figlet", "GAME OF LIFE"],
                         check=True, stderr=subprocess.DEVNULL)
+    # check=true throws CPE exeption if command does not exist
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("GAME OF LIFE".center(centred))
         print()
