@@ -21,24 +21,18 @@ def main():
     # Constants initialization (defalut, as args or from input)
     try:
         if len(sys.argv) <= 1:
-            setConstants()
-            # menu()
+            mainMenu()
         elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
             displayHelp()
             exit()
         else:
             args = dict(arg.split('=') for arg in sys.argv[1:])
             setConstants(**args)
-    except (ValueError, KeyError) as e:
-        print("\nERROR: " + e.args[0])
-        displayHelp()
-        exit()
-    # it will be used to store a past state and check for cycles
-    pastState = {"cells":[], "gen":0, "count":0}
-    cycleDetected = False
+        # it will be used to store a past state and check for cycles
+        pastState = {"cells":[], "gen":0, "count":0}
+        cycleDetected = False
 
     #program starts
-    try:
         clear()
         title(WIDTH)
         print("INITIAL STATE".center(WIDTH))
@@ -72,6 +66,10 @@ def main():
             else:
                 print("A cycle of period {} has been detected, the cells will not evolve further".format(period))
             time.sleep(DELAY)
+    except (ValueError, KeyError) as e:
+        print("\nERROR: " + e.args[0])
+        displayHelp()
+        exit()
     except KeyboardInterrupt:
         try:
             clear()
@@ -87,9 +85,6 @@ def main():
 ###
 
 def mainMenu():
-    keys = ["prob", "delay", "width", "height", "time", "gens", "period"]
-    params = dict()
-
     message = """
 DEFAULT VALUES:
 - Horizontal cells_____________________75
@@ -99,6 +94,9 @@ DEFAULT VALUES:
   (of a cell to be alive at the start)
 - Secons between generations___________0.5
 - Maximum running time_________________infinite
+  (expression {{nd|nh|nm|n[s]}} | {{[h:]m:s}},
+  as in days or hours or minutes or seconds, or
+  hh:mm:ss - hours optional)
 - Maximum number of generations________infinite
 - Cycling period_______________________10
   (number of generations it will check
@@ -108,11 +106,50 @@ DEFAULT VALUES:
     print()
     print(message)
     print()
+    try:
+        answ = tryInput("Do you want to customize these parameters? ",
+                        "^$|^[y,Y,n,Y]$")
+        if matches(answ, "^$|^[y,Y]$"):
+            paramsMenu()
+        else:
+            setConstants()
+    except (KeyboardInterrupt, ValueError):
+        raise
+
+def paramsMenu():
+    keys = iter(["width", "height", "prob", "delay", "time", "gens", "period"])
+    params = dict()
+    print("Leave blank for default value\n")
+    try:
+        params[next(keys)] = tryInput("Horizontal cells? ", "^$|^[0-9]+$")
+        params[next(keys)] = tryInput("Vertical cells? ", "^$|^[0-9]+$")
+        params[next(keys)] = tryInput("Probability? ", "^$|^[0-9]+(.[0-9]+)?$")
+        params[next(keys)] = tryInput("Secons between generations? ", "^$|^[0-9]+(.[0-9]+)?$")
+        params[next(keys)] = tryInput("Maximum running time? ",
+        # Xdays | Xhours | Xminutes | X[seconds] | [h:]m:s
+        "^$|^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$")
+        params[next(keys)] = tryInput("Maximum number of generations? ", "^$|^[0-9]+$")
+        params[next(keys)] = tryInput("Cycling period? ", "^$|^[0-9]+$")
+        # removes empty strings, so the params will be set to default
+        for key, val in params.items():
+            if val == "":
+                params.pop(key)
+        setConstants(**params)
+    except (KeyboardInterrupt, ValueError):
+        raise
+    
+def tryInput(question, regex):
     ok = False
     while not ok:
-        answ = 0
-
-
+        try:
+            answ = input(question)
+            ok = matches(answ, regex)
+            if not ok:
+                print("\nERROR: invalid input\n")
+        except KeyboardInterrupt:
+            raise
+    return answ
+    
 def setConstants(**kwargs):
     # checks for typos
     validParams = ["prob", "delay", "width", "height", "time", "gens", "period"]
@@ -142,11 +179,8 @@ def setConstants(**kwargs):
         raise ValueError("Invalid value for 'height', it should be a positive integer.")
     
     MAXTIME = kwargs.get("time", math.inf)
-    # Xdies | Xhores | Xminuts | X[segons] | [h]:m:s
-    # match = re.search("^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$",
-    #                     str(MAXTIME))
-    # matches = match != None
-    if matches(MAXTIME,
+    if matches(str(MAXTIME),
+    # Xdays | Xhours | Xminutes | X[seconds] | [h:]m:s
     "^([0-9]+d|[0-9]+h|[0-9]+m|[0-9]+s?)$|^([0-9]+:)?[0-5]?[0-9]:[0-5]?[0-9]$"):
         MAXTIME = strToSeconds(MAXTIME)
     elif (MAXTIME != math.inf or MAXTIME <= 0):
@@ -298,10 +332,6 @@ def isAlive(cells, i, j):
     except IndexError:
         return False
 
-# for now only works with enter
-def pressKey(message):
-    input(message)
-
 def display(cells, time0, gen):
     output = ""
     # returns a tuple of ints
@@ -395,6 +425,10 @@ def title(centred=0):
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("GAME OF LIFE".center(centred))
         print()
+
+# for now only works with enter
+def pressKey(message):
+    input(message)
 
 ###
 
